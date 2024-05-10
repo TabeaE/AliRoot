@@ -267,6 +267,8 @@ else()
   if(ROOTSYS)
     find_package(ROOT REQUIRED)
 
+    message(STATUS “Detected root version is ${ROOT_VERSION_MAJOR}")
+
     if(ROOT_VERSION_MAJOR EQUAL 5)
       set(ROOT_VERSION_MIN "${ROOT_VERSION_MIN_5}")
     elseif(ROOT_VERSION_MAJOR EQUAL 6)

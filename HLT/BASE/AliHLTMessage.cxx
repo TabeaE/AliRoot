@@ -35,8 +35,13 @@
 #include "TProcessID.h"
 #include "TClass.h"
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(6, 36, 0)
 extern "C" void R__zip (Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, char *bufout, Int_t *nout);
 extern "C" void R__unzip(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout);
+#else
+extern "C" void R__zipMultipleAlgorithm(Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, char *bufout, Int_t *nout, ROOT::RCompressionSetting::EAlgorithm::EValues algorithm);
+extern "C" void R__unzipMultipleAlgorithm(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout, ROOT::RCompressionSetting::EAlgorithm::EValues algorithm);
+#endif
 const Int_t kMAXBUF = 0xffffff;
 
 Bool_t AliHLTMessage::fgEvolution = kFALSE;
@@ -355,7 +360,11 @@ Int_t AliHLTMessage::Compress()
          bufmax = messlen - nzip;
       else
          bufmax = kMAXBUF;
+#if ROOT_VERSION_CODE < ROOT_VERSION(6, 36, 0)
       R__zip(fCompress, &bufmax, messbuf, &bufmax, bufcur, &nout);
+#else
+      R__zipMultipleAlgorithm(fCompress, &bufmax, messbuf, &bufmax, bufcur, &nout, ROOT::RCompressionSetting::EAlgorithm::kUseGlobal);
+#endif
       if (nout == 0 || nout >= messlen) {
          //this happens when the buffer cannot be compressed
          delete [] fBufComp;
@@ -407,7 +416,11 @@ Int_t AliHLTMessage::Uncompress()
    while (1) {
       nin  = 9 + ((Int_t)bufcur[3] | ((Int_t)bufcur[4] << 8) | ((Int_t)bufcur[5] << 16));
       nbuf = (Int_t)bufcur[6] | ((Int_t)bufcur[7] << 8) | ((Int_t)bufcur[8] << 16);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6, 36, 0)
       R__unzip(&nin, bufcur, &nbuf, messbuf, &nout);
+#else
+      R__unzipMultipleAlgorithm(&nin, bufcur, &nbuf, messbuf, &nout, ROOT::RCompressionSetting::EAlgorithm::kUseGlobal);
+#endif
       if (!nout) break;
       noutot += nout;
       if (noutot >= buflen - hdrlen) break;

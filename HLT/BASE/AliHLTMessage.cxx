@@ -40,7 +40,7 @@ extern "C" void R__zip (Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, cha
 extern "C" void R__unzip(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout);
 #else
 extern "C" void R__zipMultipleAlgorithm(Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, char *bufout, Int_t *nout, ROOT::RCompressionSetting::EAlgorithm::EValues algorithm);
-extern "C" void R__unzipMultipleAlgorithm(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout, ROOT::RCompressionSetting::EAlgorithm::EValues algorithm);
+extern "C" void R__unzip(int *srcsize, unsigned char *src, int *tgtsize, unsigned char *tgt, int *irep);
 #endif
 const Int_t kMAXBUF = 0xffffff;
 
@@ -419,7 +419,7 @@ Int_t AliHLTMessage::Uncompress()
 #if ROOT_VERSION_CODE < ROOT_VERSION(6, 36, 0)
       R__unzip(&nin, bufcur, &nbuf, messbuf, &nout);
 #else
-      R__unzipMultipleAlgorithm(&nin, bufcur, &nbuf, messbuf, &nout, ROOT::RCompressionSetting::EAlgorithm::kUseGlobal);
+      R__unzip(&nin, bufcur, &nbuf, (unsigned char *)messbuf, &nout);
 #endif
       if (!nout) break;
       noutot += nout;
